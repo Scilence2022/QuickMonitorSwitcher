@@ -1,0 +1,34 @@
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+monitor_switcher
+
+# Xcode
+xcuserdata/
+*.xcodeproj/
+*.xcworkspace/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+.xcodepro/
+
+# Macintosh specific
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*~
+.*.sw*
+
+# Dependency directories
+build/
+dist/
+bin/ 
