@@ -1,0 +1,1 @@
+# QuickMonitorSwitcher
