@@ -59,4 +59,4 @@ A simple macOS utility that allows you to move your cursor between multiple disp
 
 ## License
 
-This project is available under the MIT License. See LICENSE file for details.
+This project is available under the GNU General Public License v3.0. See LICENSE file for details.

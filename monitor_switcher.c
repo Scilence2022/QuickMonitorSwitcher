@@ -6,6 +6,28 @@
 #define LEFT_ARROW_KEYCODE  0x7B
 #define RIGHT_ARROW_KEYCODE 0x7C
 
+// Define new hotkeys: Control+Space for next display, Q for exit
+#define HOTKEY_SWITCH_NEXT_MODIFIERS_REQUIRED kCGEventFlagMaskControl
+#define HOTKEY_SWITCH_NEXT_MODIFIERS_FORBIDDEN (kCGEventFlagMaskShift | kCGEventFlagMaskAlternate | kCGEventFlagMaskCommand)
+#define HOTKEY_SWITCH_NEXT_KEYCODE   0x31  // space key
+#define HOTKEY_EXIT_MODIFIERS        (kCGEventFlagMaskControl | kCGEventFlagMaskAlternate | kCGEventFlagMaskCommand)
+#define HOTKEY_EXIT_KEYCODE          0x0C  // 'Q' key
+
+// Function to display a notification with cursor position
+void notifyCursorPosition() {
+    CGEventRef tempEvent = CGEventCreate(NULL);
+    if (!tempEvent) return;
+    CGPoint cursorPos = CGEventGetLocation(tempEvent);
+    CFRelease(tempEvent);
+
+    char notificationCmd[256];
+    // Use snprintf to prevent buffer overflows
+    snprintf(notificationCmd, sizeof(notificationCmd),
+             "osascript -e 'display notification \"Cursor at X: %.0f, Y: %.0f\" with title \"QuickMonitorSwitcher\"' &> /dev/null",
+             cursorPos.x, cursorPos.y);
+    system(notificationCmd);
+}
+
 // Switch cursor position by one display in the given direction (-1 = left, +1 = right)
 void switchDisplay(int direction) {
     // Get list of active displays
@@ -38,13 +60,16 @@ void switchDisplay(int direction) {
     int newIndex = (currentIndex + direction + displayCount) % displayCount;
     CGRect newBounds = CGDisplayBounds(displays[newIndex]);
 
-    // Compute relative position within the current display
-    double relX = currentPos.x - currentBounds.origin.x;
-    double relY = currentPos.y - currentBounds.origin.y;
+    // Compute proportional position within the current display
+    double fracX = 0.0, fracY = 0.0;
+    if (currentBounds.size.width > 0)
+        fracX = (currentPos.x - currentBounds.origin.x) / currentBounds.size.width;
+    if (currentBounds.size.height > 0)
+        fracY = (currentPos.y - currentBounds.origin.y) / currentBounds.size.height;
 
-    // Compute new absolute position on the target display
-    double newX = newBounds.origin.x + relX;
-    double newY = newBounds.origin.y + relY;
+    // Compute new absolute position proportionally on the target display
+    double newX = newBounds.origin.x + fracX * newBounds.size.width;
+    double newY = newBounds.origin.y + fracY * newBounds.size.height;
 
     // Clamp within the target display
     if (newX < newBounds.origin.x) newX = newBounds.origin.x;
@@ -55,6 +80,8 @@ void switchDisplay(int direction) {
     // Warp the cursor
     CGWarpMouseCursorPosition(CGPointMake(newX, newY));
     CGAssociateMouseAndMouseCursorPosition(true);
+
+    notifyCursorPosition(); // Notify cursor position after switching
 }
 
 // Callback for keyboard events
@@ -63,11 +90,24 @@ CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef 
         return event;
     }
 
-    // Get key code and flags
     CGKeyCode keyCode = (CGKeyCode)CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode);
     CGEventFlags flags = CGEventGetFlags(event);
 
-    // Check for Command + Left or Command + Right without other modifiers
+    // Handle Control+Space for next display
+    if ((flags & HOTKEY_SWITCH_NEXT_MODIFIERS_REQUIRED) == HOTKEY_SWITCH_NEXT_MODIFIERS_REQUIRED &&
+        !(flags & HOTKEY_SWITCH_NEXT_MODIFIERS_FORBIDDEN) &&
+        keyCode == HOTKEY_SWITCH_NEXT_KEYCODE) {
+        switchDisplay(1);
+        return NULL; // consume the event
+    }
+
+    // Handle Control+Option+Command+Q to quit the application
+    if ((flags & HOTKEY_EXIT_MODIFIERS) == HOTKEY_EXIT_MODIFIERS && keyCode == HOTKEY_EXIT_KEYCODE) {
+        CFRunLoopStop(CFRunLoopGetCurrent());
+        return NULL;
+    }
+
+    // Existing Command+Left/Right handling
     if ((flags & kCGEventFlagMaskCommand) && !(flags & (kCGEventFlagMaskShift | kCGEventFlagMaskAlternate | kCGEventFlagMaskControl))) {
         if (keyCode == LEFT_ARROW_KEYCODE) {
             switchDisplay(-1);
