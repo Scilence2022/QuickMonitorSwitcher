@@ -7,6 +7,11 @@ APP_NAME = QuickMonitorSwitcher
 APP_BUNDLE = $(APP_NAME).app
 DMG_NAME = $(APP_NAME)-1.0.dmg
 
+# Define directories within the .app bundle
+APP_CONTENTS_DIR = $(APP_BUNDLE)/Contents
+APP_MACOS_DIR = $(APP_CONTENTS_DIR)/MacOS
+APP_RESOURCES_DIR = $(APP_CONTENTS_DIR)/Resources
+
 all: $(TARGET)
 
 $(TARGET): monitor_switcher.c
@@ -26,35 +31,36 @@ uninstall:
 	rm -f $(PREFIX)/bin/$(TARGET)
 	rm -rf /Applications/$(APP_BUNDLE)
 
-app: $(TARGET)
-	mkdir -p $(APP_BUNDLE)/Contents/MacOS
-	mkdir -p $(APP_BUNDLE)/Contents/Resources
-	cp $(TARGET) $(APP_BUNDLE)/Contents/MacOS/
-	
-	# Create Info.plist
-	echo '<?xml version="1.0" encoding="UTF-8"?>' > $(APP_BUNDLE)/Contents/Info.plist
-	echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '<plist version="1.0">' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '<dict>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>CFBundleExecutable</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>monitor_switcher</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>CFBundleIdentifier</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>com.example.$(APP_NAME)</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>CFBundleName</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>$(APP_NAME)</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>CFBundleVersion</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>1.0</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>CFBundleShortVersionString</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>1.0</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>NSHumanReadableCopyright</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <string>Copyright © 2023 $(APP_NAME). All rights reserved.</string>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <key>LSBackgroundOnly</key>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '  <true/>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '</dict>' >> $(APP_BUNDLE)/Contents/Info.plist
-	echo '</plist>' >> $(APP_BUNDLE)/Contents/Info.plist
+# App target now depends on the executable, Info.plist, and config.ini
+app: $(APP_MACOS_DIR)/$(TARGET) $(APP_CONTENTS_DIR)/Info.plist $(APP_RESOURCES_DIR)/config.ini
+
+# Rule to create directories and copy the executable
+$(APP_MACOS_DIR)/$(TARGET): $(TARGET)
+	mkdir -p $(APP_MACOS_DIR)
+	cp $(TARGET) $(APP_MACOS_DIR)/
+
+# Rule to create directories and copy Info.plist
+$(APP_CONTENTS_DIR)/Info.plist: Info.plist
+	mkdir -p $(APP_CONTENTS_DIR)
+	cp Info.plist $(APP_CONTENTS_DIR)/
+
+# Rule to create directories and copy config.ini
+$(APP_RESOURCES_DIR)/config.ini: config.ini
+	mkdir -p $(APP_RESOURCES_DIR)
+	cp config.ini $(APP_RESOURCES_DIR)/
 
 install-app: app
+	# Check if /Applications directory exists and is writable, or use sudo
+	# For simplicity, this example still uses sudo. Consider user-specific install for non-admin.
+	# Also, it might be better to remove an existing app first or use rsync.
+	@echo "Installing $(APP_BUNDLE) to /Applications/..."
+	# The cp command might fail if the app is already running.
+	# Consider asking the user to quit the app first if it exists.
+	if [ -d "/Applications/$(APP_BUNDLE)" ]; then \
+		rm -rf "/Applications/$(APP_BUNDLE)"; \
+	fi
 	cp -R $(APP_BUNDLE) /Applications/
+	@echo "Installation complete. You might need to grant Accessibility permissions again for the new app location."
 
 dmg: app
 	# Create temporary directory for DMG contents
