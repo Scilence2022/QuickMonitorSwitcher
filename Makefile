@@ -6,6 +6,7 @@ PREFIX = /usr/local
 APP_NAME = QuickMonitorSwitcher
 APP_BUNDLE = $(APP_NAME).app
 DMG_NAME = $(APP_NAME)-1.0.dmg
+ICON_FILE = AppIcon.icns
 
 # Define directories within the .app bundle
 APP_CONTENTS_DIR = $(APP_BUNDLE)/Contents
@@ -31,8 +32,8 @@ uninstall:
 	rm -f $(PREFIX)/bin/$(TARGET)
 	rm -rf /Applications/$(APP_BUNDLE)
 
-# App target now depends on the executable, Info.plist, and config.ini
-app: $(APP_MACOS_DIR)/$(TARGET) $(APP_CONTENTS_DIR)/Info.plist $(APP_RESOURCES_DIR)/config.ini
+# App target now depends on the executable, Info.plist, config.ini, and the icon file
+app: $(APP_MACOS_DIR)/$(TARGET) $(APP_CONTENTS_DIR)/Info.plist $(APP_RESOURCES_DIR)/config.ini $(APP_RESOURCES_DIR)/$(ICON_FILE)
 
 # Rule to create directories and copy the executable
 $(APP_MACOS_DIR)/$(TARGET): $(TARGET)
@@ -48,6 +49,11 @@ $(APP_CONTENTS_DIR)/Info.plist: Info.plist
 $(APP_RESOURCES_DIR)/config.ini: config.ini
 	mkdir -p $(APP_RESOURCES_DIR)
 	cp config.ini $(APP_RESOURCES_DIR)/
+
+# Rule to create Resources directory and copy the icon file
+$(APP_RESOURCES_DIR)/$(ICON_FILE): $(ICON_FILE)
+	mkdir -p $(APP_RESOURCES_DIR)
+	cp $(ICON_FILE) $(APP_RESOURCES_DIR)/
 
 install-app: app
 	# Check if /Applications directory exists and is writable, or use sudo

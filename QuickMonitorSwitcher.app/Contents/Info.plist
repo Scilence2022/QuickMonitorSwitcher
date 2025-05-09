@@ -10,6 +10,8 @@
     <string>QuickMonitorSwitcher</string>
     <key>CFBundleDisplayName</key>
     <string>QuickMonitorSwitcher</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon.icns</string> <!-- 图标文件名 -->
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
