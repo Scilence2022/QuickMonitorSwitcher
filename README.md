@@ -8,11 +8,10 @@ A simple macOS utility that allows you to move your cursor between multiple disp
 
 - Quickly move your cursor to a proportional position on adjacent monitors (handles different display sizes correctly).
 - Default hotkeys:
-    - **Command + Left Arrow**: Move cursor to the left display.
-    - **Command + Right Arrow**: Move cursor to the right display.
-- Configurable hotkeys via `config.ini` for:
-    - Switching to the next display (e.g., `Control+D`).
+    - Switching to the next display (e.g., `Control+Space`).
     - Exiting the application (e.g., `Control+Option+Command+Q`).
+- Configurable hotkeys via `config.ini`
+   
 - Displays a system notification with the cursor's new coordinates after each switch.
 - Can be run as a command-line tool or packaged as a `.app` application.
 - Supports a custom application icon (`AppIcon.icns`) when packaged as an `.app`.
@@ -73,7 +72,7 @@ If `config.ini` is not found, default hotkeys are used.
 ; Available modifiers: Control, Shift, Option (or Alt), Command (or Cmd)
 ; Available keys: A-Z, 0-9, Space, Left, Right. (More can be added in keycodeForChar function in .c)
 
-switch_hotkey=Control+D
+switch_hotkey=Control+Space
 exit_hotkey=Control+Option+Command+Q
 ```
 
@@ -109,7 +108,7 @@ exit_hotkey=Control+Option+Command+Q
 ## Usage
 
 -   Use **Command + Left Arrow** or **Command + Right Arrow** to move the cursor to the previous or next display, respectively.
--   Use the hotkey defined by `switch_hotkey` in `config.ini` (default: `Control+D` if you used the example) to cycle to the next display.
+-   Use the hotkey defined by `switch_hotkey` in `config.ini` (default: `Control+Space`) to cycle to the next display.
 -   Use the hotkey defined by `exit_hotkey` in `config.ini` (default: `Control+Option+Command+Q`) to quit the application.
 
 ## License
