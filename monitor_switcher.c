@@ -381,6 +381,10 @@ void dragWindowBetweenDisplays(int direction) {
 
 // Callback for keyboard events
 CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *userInfo) {
+    // Suppress unused parameter warnings
+    (void)proxy;
+    (void)userInfo;
+
     if (type != kCGEventKeyDown) {
         return event;
     }
